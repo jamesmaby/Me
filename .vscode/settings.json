@@ -1,0 +1,5 @@
+{
+    "cortex-debug.gdbPath": "/usr/bin/gdb-multiarch",
+    //"cortex-debug.JLinkGDBServerPath": "/usr/local/bin/JLinkGDBServer",
+    "cortex-debug.stutilPath": "/usr/local/bin/st-util",
+}
