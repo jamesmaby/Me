@@ -121,3 +121,15 @@
 /cmsis_lib/source/stm32f0xx_usart.c
 
 ./build/*
+/.vscode/c_cpp_properties.json
+/.vscode/launch.json
+/.vscode/settings.json
+/.vscode/tasks.json
+/build/CMakeFiles/projstm32.dir/src/meDelay.c.o
+/build/CMakeFiles/projstm32.dir/src/meDelay.c.o.d
+/build/CMakeFiles/projstm32.dir/src/meFd.c.o
+/build/CMakeFiles/projstm32.dir/src/meFd.c.o.d
+/build/CMakeFiles/projstm32.dir/src/meFifo.c.o
+/build/CMakeFiles/projstm32.dir/src/meFifo.c.o.d
+/build/CMakeFiles/projstm32.dir/src/usart.c.o
+/build/CMakeFiles/projstm32.dir/src/usart.c.o.d
