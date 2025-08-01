@@ -10,7 +10,7 @@
 
 #include "system.h"
 #include "io.h"
-
+#include "usart.h"
 
 volatile uint64_t meTime = 0;
 
@@ -22,10 +22,11 @@ void System_Init(void) {
 	SystemClockConfig();
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 	
 	IO_Init();
+	MeUSART_Init();
 	
 	SysTick_Config( SystemCoreClock / 1000 );
 	
@@ -44,7 +45,7 @@ void SysTick_Handler(void) //1 kHz
 		blink--;
 	}else{
 		blink = 500 - 1;
-		MEPIN_SWAP(PIN_LED0);
+		// MEPIN_SWAP(PIN_LED0);
 	}
 }
 
@@ -81,13 +82,13 @@ void SystemClockConfig(){
 	while (!(RCC->CFGR & RCC_CR_PLLRDY) && timeout) timeout--;
 
 	// HSI48/prediv
-	RCC->CFGR2 |= RCC_CFGR2_PREDIV1_DIV4;
+	RCC->CFGR2 |= RCC_CFGR2_PREDIV1_DIV1;
 
 	// HSI48/prediv * PLL / Hprediv (clk AHB)
-	RCC->CFGR |= RCC_CFGR_HPRE_DIV8;
+	RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
 
 	// Division par 4 de clock en sortie de PLL (clk APB)
-	RCC->CFGR |= RCC_CFGR_PPRE_DIV4;
+	RCC->CFGR |= 8;
 
 	// 24 MHz < SYSCLK ≤ 48 MHz
 	FLASH->ACR |= FLASH_ACR_LATENCY;

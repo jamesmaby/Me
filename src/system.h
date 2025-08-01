@@ -1,7 +1,8 @@
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#ifndef __SYSTEM_H
+#define __SYSTEM_H
 
 #include <stdint.h>
+
 void System_Init(void) ;
 
 

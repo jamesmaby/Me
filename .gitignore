@@ -119,3 +119,5 @@
 /cmsis_lib/source/stm32f0xx_syscfg.c
 /cmsis_lib/source/stm32f0xx_tim.c
 /cmsis_lib/source/stm32f0xx_usart.c
+
+./build/*

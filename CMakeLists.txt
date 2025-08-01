@@ -37,13 +37,15 @@ ENDIF()
 add_definitions(-DSNET_V2)
 
 SET( PROJECT_BIN ${CMAKE_PROJECT_NAME}  )
-macro (add_sources)
-  FILE(GLOB _src 
-    "${PROJECT_SOURCE_DIR}/${ARGN}/*.h"
-    "${PROJECT_SOURCE_DIR}/${ARGN}/*.c"
-    "${PROJECT_SOURCE_DIR}/${ARGN}/*.s"
-    )
-  list (APPEND SRCS "${_src}")
+
+set(SRCS "")  # Initialise la variable SRCS globalement
+
+macro(add_sources dir)
+  file(GLOB LOCAL_SRC
+    "${PROJECT_SOURCE_DIR}/${dir}/*.c"
+    "${PROJECT_SOURCE_DIR}/${dir}/*.s"
+  )
+  list(APPEND SRCS ${LOCAL_SRC})
 endmacro()
 
 add_sources( . )
