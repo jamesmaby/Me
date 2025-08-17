@@ -7,23 +7,32 @@
 #include "meFifo.h"
 #include "usart.h"
 #include "meFd.h"
+#include "meConsole.h"
+
+
+#define DEF_CONS(_name, _size) conCtx_t conCtx; \
+        char buff_cons_##_name[_size];          \
+        char buff_seq_##_name [6];              \
+        conCtx.buff_seq = buff_seq_##_name;     \
+        conCtx.buffer = buff_cons_##_name;      \
+        static meDelay_t cons_delay_##_name;    \
+        conCtx.delay_cons = &cons_delay_##_name;
 
 
 int main(){
 
     System_Init();
 
-    meFd_t meFdTest;
-    meFd_Init(&meFdTest);
+    meFd_t meFd;
+    meFd_Init(&meFd);
 
+    DEF_CONS(meCons, 64);
 
-    char test[20] = "bien ou quoi";
-
-    meFd_Print(&meFdTest, test);
-
+	console_Init(&conCtx, &meFd);
 
     while (1)
     {
 
+        console_Polling(&conCtx);
     }
 }

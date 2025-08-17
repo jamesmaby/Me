@@ -14,6 +14,7 @@ typedef struct
 
 void meDelayInit(meDelay_t *p, uint32_t delay);
 volatile uint8_t meDelay(meDelay_t *p);
+void meDelayDisable(meDelay_t *p);
 
 
 

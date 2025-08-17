@@ -8,7 +8,7 @@
 #define ME_USART USART2
 
 #define FIFO_RX_LEN 64
-#define FIFO_TX_LEN 128
+#define FIFO_TX_LEN 1024
 
 USART_InitTypeDef usart;
 bool isTransmitting = 0;

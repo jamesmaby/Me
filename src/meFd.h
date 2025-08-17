@@ -1,9 +1,12 @@
 #ifndef __ME_FD_H
 #define __ME_FD_H
 
-#include "stdint.h"
-#include "stdbool.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdarg.h>
+
 #include "meFifo.h"
+#include "mePrintf.h"
 
 typedef struct
 {
@@ -26,11 +29,18 @@ typedef struct
     meCtx_t *ctx;
 }meFd_t;
 
+typedef struct {
+    char * buffer;
+    uint8_t index;
+    uint16_t size;
+}sprintf_putc_t;
 
 void meFd_Init(meFd_t *p);
 uint16_t meFd_Write(meFd_t *p, char *buff, uint16_t n);
 uint16_t meFd_Read(meFd_t *p, char *buff, uint16_t n);
 uint16_t meFd_Print(meFd_t *p, char *buff);
+void meFd_Printf(meFd_t *me_sd, const char *format, ...);
+void meFd_Sprintf(char *buf, uint8_t size, const char *format, ...);
 
 
 #endif // __ME_FD_H

@@ -45,7 +45,7 @@ void SysTick_Handler(void) //1 kHz
 		blink--;
 	}else{
 		blink = 500 - 1;
-		// MEPIN_SWAP(PIN_LED0);
+		MEPIN_SWAP(PIN_LED0);
 	}
 }
 

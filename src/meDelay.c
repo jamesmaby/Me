@@ -11,3 +11,7 @@ volatile uint8_t meDelay(meDelay_t *p){
     if (meTime >= p->timeout) return 1;
     else return 0;
 }
+
+void meDelayDisable(meDelay_t *p){
+    p->timeout = 0;
+}
