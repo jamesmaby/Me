@@ -1,0 +1,27 @@
+
+{
+    "cortex-debug.gdbPath": "/usr/bin/gdb-multiarch",
+    //"cortex-debug.JLinkGDBServerPath": "/usr/local/bin/JLinkGDBServer",
+    "cortex-debug.stutilPath": "/usr/local/bin/st-util",
+    "files.associations": {
+        "mebitsfield.h": "c",
+        "compare": "c",
+        "cgtree.h": "c",
+        "medelay.h": "c",
+        "meutils.h": "c",
+        "main.h": "c",
+        "string.h": "c",
+        "type_traits": "c",
+        "typeinfo": "c",
+        "stm32f0xx_rcc.h": "c",
+        "genls.h": "c",
+        "console.h": "c",
+        "cmath": "c",
+        "cstdlib": "c",
+        "meprintf.h": "c",
+        "stm32f0xx_i2c.h": "c",
+        "stm32f0xx_dac.h": "c",
+        "stm32f0xx.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled",
+}

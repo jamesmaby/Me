@@ -40,4 +40,7 @@ void IO_Init();
 #define PIN_USART2TX        MEPIN( GPIOA, 2 )
 #define PIN_USART2RX        MEPIN( GPIOA, 3 )
 
+#define PIN_ADC1           MEPIN( GPIOC, 0 )
+#define PIN_ADC2           MEPIN( GPIOC, 1 )
+
 #endif

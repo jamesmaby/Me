@@ -11,6 +11,7 @@
 #include "system.h"
 #include "io.h"
 #include "usart.h"
+#include "adc.h"
 
 volatile uint64_t meTime = 0;
 
@@ -20,10 +21,14 @@ void SystemClockConfig();
 void System_Init(void) {
 
 	SystemClockConfig();
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
+		
+	ADC1_Init();
 	
 	IO_Init();
 	MeUSART_Init();
@@ -37,7 +42,7 @@ void System_Init(void) {
 
 uint16_t blink = 0;  
 
-void SysTick_Handler(void) //1 kHz
+void SysTick_Handler(void) // 1 kHz
 {
 	meTime++;
 

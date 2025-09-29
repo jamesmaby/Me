@@ -155,16 +155,29 @@ void meIntToBinary(uint8_t num, char *buffer) {
     buffer[j] = '\0';  
 }
 
-void meIntToHex(uint32_t num, char *buffer){
+void meIntToHex(uint32_t num, char *buf){
+    static const char *hex = "0123456789ABCDEF";
+    char tmp[9]; // max 8 hex digits + '\0'
+    int i = 0;
 
-    const char hexChars[] = "0123456789ABCDEF";
-    uint8_t i;
-
-    for (i=0; i<2*sizeof(num); i++){
-        buffer[i] = hexChars[(num >> (32 - 4)) & 0x0F];
-        num <<= 4;
+    if (num == 0) {
+        buf[0] = '0';
+        goto end;
     }
-    buffer[i]= '\0';
+
+    while (num) 
+    {
+        tmp[i++] = hex[num & 0xF];
+        num >>= 4;
+    }
+
+    // inverser dans buf
+    for (int j = 0; j < i; j++) 
+        buf[j] = tmp[i - j - 1];
+    
+
+end:
+    buf[i] = '\0'; // fin de chaîne
 }
 
 

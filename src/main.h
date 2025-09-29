@@ -3,7 +3,6 @@
 
 #include "stdio.h"
 
-
-
+extern const char* promptName;
 
 #endif

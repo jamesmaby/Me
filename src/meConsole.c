@@ -3,56 +3,44 @@
 #include "stm32f0xx.h"
 #include "system.h"
 
-#define PRINT(...) meFd_Printf(ctx->pme_sd, __VA_ARGS__)
-
 #define DEF_SEQ( _seq, _code) { _seq, sizeof(_seq) - 1, _code }
 
-#define CTX_FN(_ctx, _ctx_fn)                                      \
-if (sizeof(_ctx_fn) > sizeof(_ctx->ctx_mem)) {               \
-    PRINT("Erreur: mémoire insuffisante pour le contexte\r\n");\
-    return CON_RC_DONE;                                        \
-}                                                              \
+#define CTX_FN(_ctx, _ctx_fn)                                   \
+if (sizeof(_ctx_fn) > sizeof(_ctx->ctx_mem)) {                  \
+    printf("Erreur: mémoire insuffisante pour le contexte\r\n"); \
+    return CON_RC_DONE;                                         \
+}                                                               \
 _ctx_fn *p = (_ctx_fn *) _ctx->ctx_mem; 
 
 
 #define SEQUENCE \
 const cons_sp_char_t cons_sp_char[] = { \
-    DEF_SEQ( "\x1B[D", LEFT_ARROW), \
-    DEF_SEQ( "\x1B[C", RIGHT_ARROW), \
-    DEF_SEQ( "\x1B[A", UP_ARROW), \
-    DEF_SEQ( "\x1B", ECHAP), \
-    DEF_SEQ( "\x1B[4~", FIN), \
-    DEF_SEQ( "\x1B[1~", DEBUT), \
-    DEF_SEQ( "\x1B[3~", DEL), \
-    DEF_SEQ( NULL, NO_INPUT),  \
+    DEF_SEQ( "\x1B[D", LEFT_ARROW),     \
+    DEF_SEQ( "\x1B[C", RIGHT_ARROW),    \
+    DEF_SEQ( "\x1B[A", UP_ARROW),       \
+    DEF_SEQ( "\x1B[B", DOWN_ARROW),     \
+    DEF_SEQ( "\x1B", ECHAP),            \
+    DEF_SEQ( "\x1B[4~", FIN),           \
+    DEF_SEQ( "\x1B[1~", DEBUT),         \
+    DEF_SEQ( "\x1B[3~", DEL),           \
+    DEF_SEQ( NULL, NO_INPUT),           \
 };
 
-extern const com_cmd_desc_t __start_console_cmd_list;
-extern const com_cmd_desc_t __end_console_cmd_list;
 
+COMMANDE(help, "help", console_fn_Help, "Donne toutes les commandes possibles", "help [command]" );
+COMMANDE(reboot, "reboot", console_fn_Reboot, "Reboot le système", "reboot" );
+COMMANDE(test, "test", console_fn_Test, "Ceci est une fonction test", "test" );
+COMMANDE(uptime, "uptime", console_fn_Uptime, "Donne le temps écoulé depuis le démarrage système", "uptime [-f]" );
+COMMANDE(clear, "clear", console_fn_Clear, "Clear la console", "clear") ;
 
-#define COMMANDE(_id,_name, _desc, _usage, _function) \
-    __attribute__((section(".console_cmd_list"), aligned(4))) \
-    const com_cmd_desc_t console_cmd_##_id = { \
-        .name = _name, \
-        .desc = _desc, \
-        .usage = _usage, \
-        .fnCon = _function \
-        }
-
-
-COMMANDE(help, "help", "Donne toutes les commandes possibles", "help [command]", console_fn_Help);
-COMMANDE(test, "test", "Ceci est une fonction test", "test", console_fn_Test);
-COMMANDE(uptime, "uptime", "Donne le temps écoulé depuis le démarrage système", "uptime [-f]", console_fn_Uptime);
-COMMANDE(reboot, "reboot", "Reboot le système", "reboot", console_fn_Reboot);
-COMMANDE(echo, "echo", "Affiche le texte sur le terminal", "echo", console_fn_Echo);
-COMMANDE(clear, "clear", "Clear la console", "clear", console_fn_Clear);
-COMMANDE(pong, "pong", "Voici le fonctionnement de pong", "pong", console_fn_Pong);
+// COMMANDE(echo, "echo", "Affiche le texte sur le terminal", "echo", console_fn_Echo);
     
 SEQUENCE
 
 
 void console_Init(conCtx_t *pctx_cons, meFd_t *pme_sd){
+
+    DEF_CONS(meCons, 64);
 
     pctx_cons->pme_sd = pme_sd;
 
@@ -63,8 +51,12 @@ void console_Init(conCtx_t *pctx_cons, meFd_t *pme_sd){
     pctx_cons->index_seq = 0;
     pctx_cons->argc = 0;
     pctx_cons->is_interactive = 0;
+    pctx_cons->history_write_index = 0;
+    pctx_cons->history_read_index = 0;
 
-    pctx_cons->history_index = 0;  
+
+    memset(pctx_cons->command_lengths, 0, CONS_MAX_COMMANDE_HISTORY); 
+    memset(pctx_cons->command_history, 0, CONS_MAX_COMMANDE_HISTORY*CON_BACK_BUFFER_SIZE);
     
     for (int i = 0; i < CON_ARGC_MAX; i++) {
         pctx_cons->argv[i] = NULL;
@@ -95,6 +87,9 @@ void console_Polling(conCtx_t *ctx) {
         case '\177':
             console_Backspace(ctx);
             break;
+        case '\011':
+            console_Tabulation(ctx);
+            break;
         case LEFT_ARROW:
             console_LeftArrow(ctx);
             break;
@@ -103,6 +98,9 @@ void console_Polling(conCtx_t *ctx) {
             break;
         case UP_ARROW:
             console_UpArrow(ctx);
+            break;
+        case DOWN_ARROW:
+            console_DownArrow(ctx);
             break;
         case DEBUT:
             console_Home(ctx);
@@ -134,7 +132,6 @@ char console_Reading(conCtx_t *ctx) {
         }
         return NO_INPUT;
     }
-    // PRINT("%x \r\n",c);
 
     if (c == '\x1B') {
         ctx->buff_seq[0] = c;
@@ -170,7 +167,11 @@ char console_Reading(conCtx_t *ctx) {
 
 void console_Prompt(conCtx_t *ctx){
 
-    meFd_Print(ctx->pme_sd, "> ");
+    meFd_Printf(ctx->pme_sd, "%s> ", promptName);
+}
+
+void console_ClearLine(conCtx_t *ctx){
+    meFd_Print(ctx->pme_sd, "\r\x1B[K");
 }
 
 cons_cmd_rc_t console_parse_cmd(conCtx_t *ctx) {
@@ -224,7 +225,7 @@ cons_cmd_rc_t console_match_cmd(conCtx_t *ctx) {
             cmd++;
         }
     }
-    PRINT("\rCommande introuvable, utilisez 'help'\r\n");
+    printf("\rCommande introuvable, utilisez 'help'\r\n");
     console_Prompt(ctx);
     return CON_RC_BAD_ARG;
 }
@@ -237,28 +238,28 @@ cons_cmd_rc_t console_fn_Help(conCtx_t *ctx){
     if (ctx->argc > 1) {
         while (cmd < cmd_end) {
             if (cmd->fnCon != NULL && strcmp(ctx->argv[1], cmd->name) == 0) {
-                PRINT("\r\033[36m%10s %60s %s \r\n","| name |","|descritpion|","|usage|");
-                PRINT("%10s %40s  %s \r\n\033[0m",cmd->name, cmd->desc, cmd->usage);
+                printf("\r\033[36m%10s %60s %s \r\n","| name |","|descritpion|","|usage|");
+                printf("%10s %40s  %s \r\n\033[0m",cmd->name, cmd->desc, cmd->usage);
                 console_Prompt(ctx);
                 return CON_RC_DONE;
             } else continue;
         }
-        PRINT("argument inconnu : %s\r\n", ctx->argv[1]);
+        printf("argument inconnu : %s\r\n", ctx->argv[1]);
         console_Prompt(ctx);
         return CON_RC_BAD_ARG;
     }
     
-    PRINT("\033[36m");
-    PRINT("%10s %60s %s \r\n","| name |","|descritpion|","|usage|");
+    printf("\033[36m");
+    printf("%-10s   %50s   %10s \r\n","| name |","| descritpion |","| usage |");
 
     cmd = &__start_console_cmd_list;
     while (cmd < cmd_end) {
         if (cmd->fnCon != NULL) {
-            PRINT("%10s %60s  %s \r\n", cmd->name, cmd->desc, cmd->usage);
+            printf("%-10s   %50s   %-10s \r\n", cmd->name, cmd->desc, cmd->usage);
         }
         cmd++;
     }
-    PRINT("\033[0m");
+    printf("\033[0m");
     console_Prompt(ctx);
     return CON_RC_DONE;
 }
@@ -266,7 +267,7 @@ cons_cmd_rc_t console_fn_Help(conCtx_t *ctx){
 cons_cmd_rc_t console_fn_Test(conCtx_t *ctx){
     com_cmd_desc_t *com_cmd_desc = (com_cmd_desc_t *) ctx->com_cmd_desc;
 
-    PRINT("\033[36m%s\r\n\033[0m",com_cmd_desc->desc);
+    printf("\033[36m%s\r\n\033[0m",com_cmd_desc->desc);
     console_Prompt(ctx);
     return CON_RC_DONE;
 }
@@ -289,7 +290,7 @@ cons_cmd_rc_t console_fn_Uptime(conCtx_t *ctx) {
         if (strcmp(ctx->argv[i], "-f") == 0) {
             format_flag = true;
         } else {
-            PRINT("argument inconnu : %s\r\n", ctx->argv[i]);
+            printf("argument inconnu : %s\r\n", ctx->argv[i]);
             console_Prompt(ctx);
             return CON_RC_BAD_ARG;
         }
@@ -304,12 +305,12 @@ cons_cmd_rc_t console_fn_Uptime(conCtx_t *ctx) {
             interactive:
             con_ctx_uptime_t *p = (con_ctx_uptime_t *) ctx->ctx_mem;
             if (meDelay(&(p->uptime_delay))){
-                PRINT("\rJour : %d, Heure : %d, Minutes : %d, Secondes : %d \r",GiveTimeSec()/(24*3600),(GiveTimeSec()/3600)%24, (GiveTimeSec()/60)%60, GiveTimeSec()%60);
+                printf("\rJour : %d, Heure : %d, Minutes : %d, Secondes : %d \r",GiveTimeSec()/(24*3600),(GiveTimeSec()/3600)%24, (GiveTimeSec()/60)%60, GiveTimeSec()%60);
                 meDelayInit(&(p->uptime_delay),p->uptime_timeout);
             } else return INTERACTIVE;
         }
     } else {
-        PRINT("\rJour : %d, Heure : %d, Minutes : %d, Secondes : %d \r\n",GiveTimeSec()/(24*3600),(GiveTimeSec()/3600)%24, (GiveTimeSec()/60)%60, GiveTimeSec()%60);
+        printf("\rJour : %d, Heure : %d, Minutes : %d, Secondes : %d \r\n",GiveTimeSec()/(24*3600),(GiveTimeSec()/3600)%24, (GiveTimeSec()/60)%60, GiveTimeSec()%60);
         console_Prompt(ctx);
     }
 
@@ -327,7 +328,7 @@ cons_cmd_rc_t console_fn_Echo(conCtx_t *ctx) {
     uint8_t start_index = 1;
 
     if (ctx->argc == 1) {
-        PRINT("\r\n"); 
+        printf("\r\n"); 
         return CON_RC_DONE;
     }
 
@@ -337,13 +338,13 @@ cons_cmd_rc_t console_fn_Echo(conCtx_t *ctx) {
     }
 
     for (int i = start_index; i < ctx->argc; i++) {
-        PRINT("%s", ctx->argv[i]);
+        printf("%s", ctx->argv[i]);
         if (i < ctx->argc - 1) {
-            PRINT(" "); 
+            printf(" "); 
         }
     }
     if (!newline){
-        PRINT("\r\n"); 
+        printf("\r\n"); 
         console_Prompt(ctx);
     } 
 
@@ -352,7 +353,7 @@ cons_cmd_rc_t console_fn_Echo(conCtx_t *ctx) {
 
 cons_cmd_rc_t console_fn_Pong(conCtx_t *ctx) {
 
-    PRINT("ALLEZ LE FOOT\r\n");
+    printf("ALLEZ LE FOOT\r\n");
     console_Prompt(ctx);
     return CON_RC_DONE;
 }

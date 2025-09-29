@@ -29,7 +29,8 @@ typedef struct
     meCtx_t *ctx;
 }meFd_t;
 
-typedef struct {
+typedef struct 
+{
     char * buffer;
     uint8_t index;
     uint16_t size;

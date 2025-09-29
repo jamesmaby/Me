@@ -2,6 +2,7 @@
 #include "stm32f0xx.h"
 #include "stm32f0xx_usart.h"
 #include "io.h"
+#include "stm32f0xx_rcc.h"
 
 #define BAUDRATE 115200
 
@@ -17,6 +18,7 @@ ME_FIFO_INIT(fifoRx, FIFO_RX_LEN);
 ME_FIFO_INIT(fifoTx, FIFO_TX_LEN);
 
 void MeUSART_Init(){
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
     usart.USART_BaudRate = BAUDRATE;
     usart.USART_WordLength = USART_WordLength_8b;

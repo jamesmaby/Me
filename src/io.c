@@ -18,6 +18,9 @@ const iodesc_t ios[] = {
 		// Console
 		IODESCAF( PIN_USART2RX, GPIO_OType_PP, GPIO_PuPd_UP, GPIO_AF_1 ),
 		IODESCAF( PIN_USART2TX, GPIO_OType_PP, GPIO_PuPd_UP, GPIO_AF_1 ),
+
+		IODESC( PIN_ADC1, GPIO_Mode_AN, GPIO_OType_PP, GPIO_PuPd_NOPULL ),
+		IODESC( PIN_ADC2, GPIO_Mode_AN, GPIO_OType_PP, GPIO_PuPd_NOPULL ),
 	
 		IODESC_END()
 };

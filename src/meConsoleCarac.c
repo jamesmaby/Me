@@ -1,4 +1,5 @@
 #include "meConsoleCarac.h"
+#include "meConsole.h"
 
 
 void console_Clear(conCtx_t *ctx){
@@ -12,18 +13,20 @@ bool console_entrer(conCtx_t *ctx){
 
     if (ctx->is_interactive) return false;
 
-    if (ctx->index == 0) {
-        ctx->buffer[ctx->index] = '\0';
+    if (ctx->index == 0) 
+    {
+        ctx->buffer[0] = '\0';
         meFd_Printf(ctx->pme_sd,"\r\n");
         console_Prompt(ctx);
         return false;
     }
 
 
-    // memcpy(&ctx->back_seq_buff[ctx->back_head],ctx->buffer,ctx->current_size);
-    // ctx->back_head += ctx->current_size % CON_BACK_SIZE;
-
-    // strcpy(ctx->back_seq[ctx->index_back_seq++ & (CON_BACK_SIZE-1)],ctx->buffer);
+    memcpy(ctx->command_history[ctx->history_read_index], ctx->buffer, ctx->current_size);
+    ctx->command_lengths[ctx->history_read_index] = ctx->current_size; // Sauvegarde la taille de la commande
+    ctx->history_write_index = ctx->history_read_index; //  
+    ctx->history_read_index++;
+    ctx->history_read_index &= (CONS_MAX_COMMANDE_HISTORY - 1); // modulo
 
     meFd_Printf(ctx->pme_sd,"\r\n%s\r\n",ctx->buffer);
     console_Prompt(ctx);
@@ -42,12 +45,12 @@ void console_Backspace(conCtx_t *ctx){
         memmove(&ctx->buffer[ctx->index], &ctx->buffer[ctx->index + 1], ctx->current_size - ctx->index +1);
         ctx->buffer[ctx->current_size] = '\0';
 
-        meFd_Print(ctx->pme_sd, "\r\x1B[K");
+        console_ClearLine(ctx);
         console_Prompt(ctx);
         meFd_Print(ctx->pme_sd, ctx->buffer);
 
         char reposition[10];
-        meFd_Sprintf(reposition, sizeof(reposition),"\x1B[%dG", (ctx->index+3));
+        meFd_Sprintf(reposition, sizeof(reposition),"\x1B[%dG", (ctx->index+LEN_PROMPT));
         meFd_Print(ctx->pme_sd, reposition);
     }
 
@@ -58,7 +61,7 @@ void console_LeftArrow(conCtx_t *ctx){
     if (ctx->index > 0) {
         ctx->index--;
         char reposition[10];
-        meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (int)ctx->index + 3);
+        meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (int)ctx->index + LEN_PROMPT);
         meFd_Print(ctx->pme_sd, reposition);
     }
 }
@@ -69,26 +72,60 @@ void console_RightArrow(conCtx_t *ctx){
         ctx->index++;
 
         char reposition[10];
-        meFd_Sprintf(reposition,sizeof(reposition), "\x1B[%dG", (int)(ctx->index + 3) );
+        meFd_Sprintf(reposition,sizeof(reposition), "\x1B[%dG", (int)(ctx->index + LEN_PROMPT) );
         meFd_Print(ctx->pme_sd, reposition);
     }
 }
 
 void console_UpArrow(conCtx_t *ctx) {
     if (ctx->is_interactive) return;
+    uint8_t idx = ctx->history_write_index;
 
-    meFd_Printf(ctx->pme_sd, "\r\x1B[K");
-
-    if (!console_GetPreviousCommand(ctx, ctx->buffer)) {
+    if ( ctx->command_history[idx][0] == 0 ) // Si je n'ai pas de commande en mémoire
         return;
-    }
+
+    console_ClearLine(ctx);
+    memcpy(ctx->buffer, ctx->command_history[idx], ctx->command_lengths[idx]); // Copier la commande
+    ctx->buffer[ctx->command_lengths[idx]] = '\0'; // Fin de chaîne sinon pb si taille précédente > taille actuelle
+    ctx->current_size = ctx->command_lengths[idx]; // Màj taille courante
+    ctx->history_write_index = (idx - 1) & (CONS_MAX_COMMANDE_HISTORY - 1); // modulo
 
     console_Prompt(ctx);
     meFd_Printf(ctx->pme_sd, "%s", ctx->buffer);
 
     // Repositionner le curseur
     char reposition[10];
-    meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (int)(strlen(ctx->buffer) + 3));
+    meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (int)(strlen(ctx->buffer) + LEN_PROMPT));
+    meFd_Print(ctx->pme_sd, reposition);
+
+    ctx->index = strlen(ctx->buffer);
+    ctx->current_size = ctx->index;
+}
+
+void console_DownArrow(conCtx_t *ctx) {
+    if (ctx->is_interactive) return;
+    uint8_t idx = ctx->history_write_index;
+
+    if ( ctx->command_history[idx][0] == 0 ) // Si je n'ai pas de commande en mémoire | ou si je suis à la commande la plus récente
+        return;
+
+    idx = (idx + 1) & (CONS_MAX_COMMANDE_HISTORY - 1); // modulo
+    if ( ctx->command_history[idx][0] == 0 ) // Si je n'ai pas de commande en mémoire
+        return;
+
+
+    console_ClearLine(ctx);
+    memcpy(ctx->buffer, ctx->command_history[idx], ctx->command_lengths[idx]); // Copier la commande
+    ctx->buffer[ctx->command_lengths[idx]] = '\0'; // Fin de chaîne sinon pb si taille précédente > taille actuelle
+    ctx->current_size = ctx->command_lengths[idx]; // Màj taille courante
+    ctx->history_write_index = idx;
+
+    console_Prompt(ctx);
+    meFd_Printf(ctx->pme_sd, "%s", ctx->buffer);
+
+    // Repositionner le curseur
+    char reposition[10];
+    meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (strlen(ctx->buffer) + LEN_PROMPT));
     meFd_Print(ctx->pme_sd, reposition);
 
     ctx->index = strlen(ctx->buffer);
@@ -119,7 +156,7 @@ void console_End(conCtx_t *ctx){
     ctx->index = ctx->current_size;
 
     char reposition[10];
-    meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG",ctx->current_size+3);
+    meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG",ctx->current_size+LEN_PROMPT);
     meFd_Print(ctx->pme_sd, reposition);
 
 
@@ -139,13 +176,12 @@ void console_Carac (conCtx_t *ctx, char c){
         ctx->current_size++;
         ctx->buffer[ctx->current_size] = '\0';
 
-        meFd_Print(ctx->pme_sd, "\r\x1B[K");
+        console_ClearLine(ctx);
         console_Prompt(ctx);
-        // strcpy(temp,ctx->buffer);
         meFd_Print(ctx->pme_sd, ctx->buffer); 
 
         char reposition[10];
-        meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", ctx->index + 3);
+        meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", ctx->index + LEN_PROMPT);
         meFd_Print(ctx->pme_sd, reposition);
     }
 }
@@ -158,7 +194,7 @@ void console_Del(conCtx_t *ctx){
         memmove(&ctx->buffer[ctx->index], &ctx->buffer[ctx->index + 1], ctx->current_size - ctx->index);
         ctx->buffer[ctx->current_size] = '\0';
 
-        meFd_Print(ctx->pme_sd, "\r\x1B[K");
+        console_ClearLine(ctx);
         console_Prompt(ctx);  
         meFd_Print(ctx->pme_sd, ctx->buffer);
 
@@ -166,22 +202,34 @@ void console_Del(conCtx_t *ctx){
         meFd_Sprintf(reposition, sizeof(reposition),"\x1B[%dD", (ctx->current_size - ctx->index) );
         meFd_Print(ctx->pme_sd, reposition);
     }
-
-}
-void console_AddToHistory(conCtx_t *ctx, const char *cmd) {
-
-    // memmove(ctx->buffer[ctx->index],ctx->buffer,strlen(cmd) + 1);
-
 }
 
+void console_Tabulation(conCtx_t *ctx){
+    if (ctx->current_size == 0) return;
+    const com_cmd_desc_t* p =  &__start_console_cmd_list;
+    const com_cmd_desc_t* pend =  &__end_console_cmd_list;
+    bool found = false;
 
-bool console_GetPreviousCommand(conCtx_t *ctx, char *dest) {
-
-    uint8_t i = 1;
-    while (ctx->buffer++){
-        i++;
+    while ( p != pend )
+    {
+        if ( !strncmp(p->name, ctx->buffer, ctx->current_size) ){
+            found = true;
+            break;
+        }
+        p++;
     }
-    memmove(dest,ctx->buffer+i,strlen(ctx->buffer+i)+1);
 
-    return true;
+    if (found){
+        console_ClearLine(ctx);
+        strcpy(ctx->buffer, p->name);
+        ctx->current_size = strlen(p->name);
+        ctx->index = ctx->current_size;
+        console_Prompt(ctx);
+        meFd_Print(ctx->pme_sd, ctx->buffer);
+
+        char reposition[10];
+        meFd_Sprintf(reposition, sizeof(reposition), "\x1B[%dG", (ctx->index + LEN_PROMPT));
+        meFd_Print(ctx->pme_sd, reposition);
+    }
 }
+
