@@ -38,7 +38,7 @@ void tinyFormat(fnPutc_t putc, void *ctx, const char *format, va_list va){
                 case 's': {  
                     char *s = va_arg(va, char *);
                     f.len = strlen(s);
-                    f.space = f.nbCarFmt > f.len ? (f.nbCarFmt - f.len) : 0;
+                    f.space = (f.nbCarFmt > f.len) ? (f.nbCarFmt - f.len) : 0;
 
                     if (!f.space){
                         while (*s){
@@ -70,6 +70,21 @@ void tinyFormat(fnPutc_t putc, void *ctx, const char *format, va_list va){
                     uint32_t b = va_arg(va, int);
                     meIntToBinary((uint8_t) b, binary);
                     char* pb = binary;
+
+                    int len = strlen(binary);
+                    int pad = (f.nbCarFmt > len) ? (f.nbCarFmt - len) : 0;
+
+
+                    if (*(format-2) == '0') {  // simple détection du '0' dans "%02d"
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,'0');
+                        }
+                    } else if (pad > 0) {  // sinon espace
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,' ');
+                        }
+                    }
+
                     while (*pb){
                         putc(ctx,*(pb++));
                     }
@@ -79,6 +94,20 @@ void tinyFormat(fnPutc_t putc, void *ctx, const char *format, va_list va){
                     uint32_t x = va_arg(va, int);
                     meIntToHex((uint32_t) x, hex);
                     char * phex = hex;
+
+                    int len = strlen(hex);
+                    int pad = (f.nbCarFmt > len) ? (f.nbCarFmt - len) : 0;
+
+                    if (*(format-2) == '0') {  // simple détection du '0' dans "%02d"
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,'0');
+                        }
+                    } else if (pad > 0) {  // sinon espace
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,' ');
+                        }
+                    }
+
                     while (*phex){
                         putc(ctx,*(phex++));
                     }
@@ -88,6 +117,19 @@ void tinyFormat(fnPutc_t putc, void *ctx, const char *format, va_list va){
                     uint64_t d = va_arg(va, int);
                     meItoa((uint64_t) d,d_buff);
                     char * pd = d_buff;
+
+                    int len = strlen(d_buff);
+                    int pad = (f.nbCarFmt > len) ? (f.nbCarFmt - len) : 0;
+
+                    if (*(format-2) == '0') {  // simple détection du '0' dans "%02d"
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,'0');
+                        }
+                    } else if (pad > 0) {  // sinon espace
+                        for (int i = 0; i < pad; i++) {
+                            putc(ctx,' ');
+                        }
+                    }
                     while (*pd){
                         putc(ctx,*(pd++));
                     }

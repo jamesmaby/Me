@@ -21,7 +21,9 @@
         "meprintf.h": "c",
         "stm32f0xx_i2c.h": "c",
         "stm32f0xx_dac.h": "c",
-        "stm32f0xx.h": "c"
+        "stm32f0xx.h": "c",
+        "stm32f0xx_iwdg.h": "c",
+        "stm32f0xx_gpio.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled",
 }

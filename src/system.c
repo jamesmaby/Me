@@ -12,6 +12,13 @@
 #include "io.h"
 #include "usart.h"
 #include "adc.h"
+#include "wd.h"
+#include "rtc.h"
+#include "spi.h"
+
+
+// #define __WD_ENABLE__
+// #define __RTC_ALARM_ENABLE__
 
 volatile uint64_t meTime = 0;
 
@@ -29,10 +36,20 @@ void System_Init(void) {
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
 		
 	ADC1_Init();
+	spi_Init();
 	
 	IO_Init();
-	MeUSART_Init();
-	
+	MeUSART_Init();	
+
+	rtc_Init();
+
+#ifdef __WD_ENABLE__
+	wd_Init();
+#endif
+#ifdef __RTC_ALARM_ENABLE__
+	rtc_Alarm_Init();
+#endif
+
 	SysTick_Config( SystemCoreClock / 1000 );
 	
 	meTime = 0;

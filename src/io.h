@@ -2,7 +2,7 @@
 #define __IO_H
 
 #include "stm32f0xx_gpio.h"
-
+#include "main.h"
 
 void IO_Init();
 
@@ -12,23 +12,23 @@ void IO_Init();
 
 #define MEPIN( _port, _pin ) _port, _pin
 
-#define MEPIN_SET( _p_ ) MEPIN_SET_( _p_ )
 #define MEPIN_SET_( _port, _pin ) _port->BSRR = (1<<_pin)
+#define MEPIN_SET( _p_ ) MEPIN_SET_( _p_ )
 
-#define MEPIN_CLR( _p_ ) MEPIN_CLR_( _p_ )
 #define MEPIN_CLR_( _port, _pin ) _port->BRR = (1<<_pin)
+#define MEPIN_CLR( _p_ ) MEPIN_CLR_( _p_ )
 
-#define MEPIN_SWAP( _p_ ) MEPIN_SWAP_( _p_ )
-#define MEPIN_SWAP_( _port, _pin ) _port->BSRR = MEPIN_GET_(_port, _pin) ? ( 1<<(_pin+16) ) : 1<<(_pin)
-
-#define MEPIN_GET( _p_ ) MEPIN_GET_( _p_ )
 #define MEPIN_GET_( _port, _pin ) (_port->IDR & (1<<_pin))
+#define MEPIN_GET( _p_ ) MEPIN_GET_( _p_ )
 
-#define MEPIN_GET_PIN_MASK( _p_ ) MEPIN_GET_PIN_MASK_( _p_ )
+#define MEPIN_SWAP_( _port, _pin ) _port->BSRR = MEPIN_GET_(_port, _pin) ? ( 1<<(_pin+16) ) : 1<<(_pin)
+#define MEPIN_SWAP( _p_ ) MEPIN_SWAP_( _p_ )
+
 #define MEPIN_GET_PIN_MASK_( _port, _pin ) (1<<_pin)
+#define MEPIN_GET_PIN_MASK( _p_ ) MEPIN_GET_PIN_MASK_( _p_ )
 
-#define MEPIN_GET_PIN_GPIO( _p_ ) MEPIN_GET_PIN_GPIO_( _p_ )
 #define MEPIN_GET_PIN_GPIO_( _port, _pin ) (_port)
+#define MEPIN_GET_PIN_GPIO( _p_ ) MEPIN_GET_PIN_GPIO_( _p_ )
 
 
 
@@ -42,5 +42,7 @@ void IO_Init();
 
 #define PIN_ADC1           MEPIN( GPIOC, 0 )
 #define PIN_ADC2           MEPIN( GPIOC, 1 )
+
+#define PIN_SPI_CS        MEPIN( GPIOA, 4 )
 
 #endif
