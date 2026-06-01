@@ -16,16 +16,16 @@ SET(CMAKE_ASM_FLAGS "-mthumb -mcpu=cortex-m0 -x assembler-with-cpp" CACHE INTERN
 
 SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -g -mthumb -mcpu=cortex-m0 -mabi=aapcs -nostartfiles -T../arm-gcc-link.ld" CACHE INTERNAL "executable linker flags")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__FILENAME__='\"$(subst  ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+add_compile_options(-D__FILENAME__=\"__FILE__\")
 
-add_definitions(-DSTM32F072RB)
 add_definitions(-ggdb -gdwarf-2)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-include_directories( . ./cmsis_boot ./cmsis_boot/startup ./cmsis_core ./cmsis_lib/include ./cmsis_lib/source ./stm32_lib/inc ./src )
+include_directories( . ./cmsis_boot ./cmsis_boot/startup ./cmsis_core ./cmsis_lib/include ./cmsis_lib/source ./stm32_lib/inc ./src ./myLib)
 
+# 066EFF515570514867203509
 SET(INSTALL_TARGET_ID "066EFF515570514867203509" CACHE STRING "If set, install only on this targert ID")
 
 IF( ${INSTALL_TARGET_ID} MATCHES "(.+)" )
@@ -33,8 +33,6 @@ IF( ${INSTALL_TARGET_ID} MATCHES "(.+)" )
 ELSE()
 	SET( STFLASH_OPT "" )
 ENDIF()
-
-add_definitions(-DSNET_V2)
 
 SET( PROJECT_BIN ${CMAKE_PROJECT_NAME}  )
 
@@ -55,8 +53,14 @@ add_sources( cmsis_core )
 add_sources( cmsis_lib/include )
 add_sources( cmsis_lib/source )
 add_sources( src )
+add_sources( /myLib )
 
 add_executable(${PROJECT_BIN} ${SRCS} )
+
+target_compile_definitions(${PROJECT_BIN}
+    PRIVATE
+        STM32F072
+)
 # add_dependencies( ${PROJECT_BIN} version )
 
 ADD_CUSTOM_TARGET(${PROJECT_BIN}.hex ALL DEPENDS ${PROJECT_BIN} COMMAND arm-none-eabi-objcopy --strip-unneeded -Oihex ${PROJECT_BINARY_DIR}/${PROJECT_BIN} ${PROJECT_BINARY_DIR}/${PROJECT_BIN}.hex)

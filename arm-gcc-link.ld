@@ -44,10 +44,6 @@ SECTIONS
 		__end_console_cmd_list = .;
 	} > FLASH
 
-	.cg_elt_list : {
-		KEEP(*(SORT(.cg_elt_list*)));
-	} > FLASH
-
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)

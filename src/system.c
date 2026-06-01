@@ -10,13 +10,16 @@
 
 #include "system.h"
 #include "io.h"
-#include "usart.h"
+#include "GenLS.h"
 #include "adc.h"
 #include "wd.h"
 #include "rtc.h"
-#include "spi.h"
+#include "timer.h"
+#include "WS2812B.h"
+#include "button.h"
 
 
+// #define __USE_MCO__
 // #define __WD_ENABLE__
 // #define __RTC_ALARM_ENABLE__
 
@@ -25,6 +28,7 @@ volatile uint64_t meTime = 0;
 void SystemClockConfig();
 
 //-----------------------------------------------------------------------------------------
+void usart_init_console(); // delared in usart.c
 void System_Init(void) {
 
 	SystemClockConfig();
@@ -35,11 +39,12 @@ void System_Init(void) {
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
 		
+	Timer_Init();
 	ADC1_Init();
-	spi_Init();
 	
 	IO_Init();
-	MeUSART_Init();	
+	usart_init_console();
+	WS2812B_Init();
 
 	rtc_Init();
 
@@ -57,25 +62,18 @@ void System_Init(void) {
 
 //-----------------------------------------------------------------------------------------
 
-uint16_t blink = 0;  
+uint16_t blink = 500;  
 
 void SysTick_Handler(void) // 1 kHz
 {
 	meTime++;
 
-	if ( blink ){
-		blink--;
-	}else{
+	if ( ! --blink ){
 		blink = 500 - 1;
 		MEPIN_SWAP(PIN_LED0);
 	}
-}
 
-uint32_t GiveTime(){
-	return meTime;
-}
-uint32_t GiveTimeSec(){
-	return meTime / 1000;
+	btn_IncCnt();
 }
 
 void SystemClockConfig(){
@@ -84,36 +82,35 @@ void SystemClockConfig(){
 
 	// Set HSI 48MHz
 	RCC->CR2 |= RCC_CR2_HSI48ON;
+	
 	timeout = HSI_STARTUP_TIMEOUT;
 	while (!(RCC->CR2 & RCC_CR2_HSI48RDY) && timeout) timeout--;
 
-	// Selection de PLL en entrée
-	RCC->CFGR |= RCC_CFGR_SW_PLL;
-	timeout = 10000;
-	while (!(RCC->CR2 & RCC_CFGR_SWS_PLL) && timeout) timeout--;
-
-	// HSI48/prediv * PLL
-	RCC->CFGR |= RCC_CFGR_PLLMUL4;
-
-	// Selection de HSI48/prediv en clock d'entrée
-	RCC->CFGR |= RCC_CFGR_PLLSRC_HSI48_PREDIV;
+	// PLLCLK = HSI48/prediv * PLL
+	RCC->CFGR2 |= RCC_CFGR2_PREDIV1_DIV2; // HSI48 / 2 = 24 MHz
+	RCC->CFGR |= RCC_CFGR_PLLMUL; // x2 => 48 MHz  
 
 	// PLL ON
 	RCC->CR |= RCC_CR_PLLON;
 	timeout = 10000;
-	while (!(RCC->CFGR & RCC_CR_PLLRDY) && timeout) timeout--;
+	while (!(RCC->CR & RCC_CR_PLLRDY) && timeout) timeout--;
 
-	// HSI48/prediv
-	RCC->CFGR2 |= RCC_CFGR2_PREDIV1_DIV1;
+	// Selection de HSI48/prediv en clock d'entrée
+	RCC->CFGR |= RCC_CFGR_PLLSRC_HSI48_PREDIV;
 
-	// HSI48/prediv * PLL / Hprediv (clk AHB)
+	// AHB : HSI48/prediv * PLL / Hprediv (clk AHB)
 	RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
 
-	// Division par 4 de clock en sortie de PLL (clk APB)
-	RCC->CFGR |= 8;
+	// APB : HSI48/prediv * PLL / Pprediv*Hprediv (clk APB)
+	RCC->CFGR |= RCC_CFGR_PPRE_DIV1;
 
 	// 24 MHz < SYSCLK ≤ 48 MHz
 	FLASH->ACR |= FLASH_ACR_LATENCY;
+
+	// Selection de PLL en entrée
+	RCC->CFGR |= RCC_CFGR_SW_PLL;
+	timeout = 10000;
+	while (!(RCC->CFGR & RCC_CFGR_SWS_PLL) && timeout) timeout--;
 
 	SystemCoreClockUpdate();
 }

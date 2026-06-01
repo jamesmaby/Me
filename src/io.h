@@ -40,9 +40,15 @@ void IO_Init();
 #define PIN_USART2TX        MEPIN( GPIOA, 2 )
 #define PIN_USART2RX        MEPIN( GPIOA, 3 )
 
-#define PIN_ADC1           MEPIN( GPIOC, 0 )
-#define PIN_ADC2           MEPIN( GPIOC, 1 )
+#define PIN_ADC1            MEPIN( GPIOC, 0 )
+#define PIN_ADC2            MEPIN( GPIOC, 1 )
 
-#define PIN_SPI_CS        MEPIN( GPIOA, 4 )
+#define PIN_SPI_CS          MEPIN( GPIOB, 10 )
+
+#define PIN_USER_BUTTON     MEPIN( GPIOC, 13 )
+
+#ifdef __USE_MCO__
+    #define PIN_MCO             MEPIN( GPIOA, 8 )
+#endif
 
 #endif

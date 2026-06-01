@@ -12,7 +12,7 @@ RTC_TimeTypeDef RTC_TimeStruct;
 RTC_DateTypeDef RTC_DateStruct;
 RTC_AlarmTypeDef RTC_AlarmStruct;
 
-void rtc_Init(void)
+void rtc_Init()
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
     PWR_BackupAccessCmd(ENABLE); // autoriser l’accès au domaine backup
@@ -80,7 +80,7 @@ void rtc_Alarm_Init(void)
     EXTI_InitStruct.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStruct);
 
-	NVIC_SetPriority(RTC_IRQn, 1);
+	NVIC_SetPriority(RTC_IRQn, 2);
 	NVIC_EnableIRQ(RTC_IRQn);
 }
 

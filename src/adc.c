@@ -73,38 +73,42 @@ void ADC1_Init(){
 cons_cmd_rc_t console_fn_Adc(conCtx_t *ctx);
 
 COMMANDE(adc, "adc", console_fn_Adc, "Donne la valeur des ADC",
-                        "adc -a : affiche toutes les valeurs\n" );
+                        "     adc : affiche toutes les valeurs\r\n"
+                        "     adc cal : affiche vcal\r\n" );
 
 
 cons_cmd_rc_t console_fn_Adc(conCtx_t *ctx){
-    bool all_flag = false;
+    int status = CON_RC_DONE;
 
-    for (int i = 1; i < ctx->argc; i++) { 
-        if (strcmp(ctx->argv[i], "-a") == 0) {
-            all_flag = true;
-        } else {
-            printf("argument inconnu : %s\r\n", ctx->argv[i]);
-            console_Prompt(ctx);
-            return CON_RC_BAD_ARG;
-        }
-    }
-
-    if (all_flag) {
+    if ( ARGNB(0) )
+    {
         // if (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) 
         //     ADC_ClearFlag(ADC1, ADC_FLAG_EOSEQ);
         // while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)){}
-        
+
         printf("ADC1 PC0 : %d\r\n", adc_buffer[ADC_VAL1]);
         printf("ADC1 PC1 : %d\r\n", adc_buffer[ADC_VAL2]);
         printf("ADC1 VREF : %d\r\n", adc_buffer[ADC_VREF]);
         printf("ADC1 VSENSE : %d\r\n", adc_buffer[ADC_VSENSE]);
         printf("VCAL: %d\r\n", (uint16_t)*((uint16_t*)VREF_INT_CAL));
-    } else {
-        printf("ADC1 PC0 : %d\r\n", adc_buffer[ADC_VAL1]);
+
+    } else if ( ARGNB(1) )
+    {
+        if ( ARGEQ(1, "cal") ) {
+            printf("VCAL: %d\r\n", (uint16_t)*((uint16_t*)VREF_INT_CAL));
+
+        } else {
+            printf("argument inconnu\r\n");
+            status = CON_RC_BAD_ARG;
+        }
+    } else 
+    {
+        printf("bad usage : \r\n%s\r\n", ctx->com_cmd_desc->usage);
+        status = CON_RC_BAD_ARG;
     }
 
     console_Prompt(ctx);
-    return CON_RC_DONE;
+    return status;
 }
 
 
