@@ -239,7 +239,7 @@ g_pfnVectors:
   .thumb_set TS_IRQHandler,Default_Handler
  
   .weak DMA1_Ch1_IRQHandler
-  .thumb_set DMA1_Channel1_IRQHandler,Default_Handler
+  .thumb_set DMA1_Ch1_IRQHandler,Default_Handler
 
   .weak DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler
   .thumb_set DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler,Default_Handler

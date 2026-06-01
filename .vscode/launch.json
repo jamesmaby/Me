@@ -15,6 +15,7 @@
             "device": "STM32F072RB",
             "interface": "swd",
             "runToEntryPoint": "main", // else it starts at reset handler - not interested
+            "serialNumber": "066EFF515570514867203509",
             // "preLaunchTask": "Build all", // configured in tasks.json
             // "preLaunchCommands": ["Build all"], // you can execute command instead of task
             "svdFile": "", // Include svd to watch device peripherals
