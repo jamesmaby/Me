@@ -5502,28 +5502,28 @@ typedef struct
 
 #elif defined (STM32F072)
 /* Aliases for __IRQn */
-#define PVD_IRQn                          PVD_VDDIO2_IRQn
-#define RCC_IRQn                          RCC_CRS_IRQn
-#define TS_IRQn                           TSC_IRQn
-#define DMA1_Ch1_IRQn                     DMA1_Channel1_IRQn
-#define DMA1_Ch2_3_DMA2_Ch1_2_IRQn        DMA1_Channel2_3_IRQn           
-#define DMA1_Channel4_5_IRQn              DMA1_Channel4_5_6_7_IRQn
-#define DMA1_Ch4_7_DMA2_Ch3_5_IRQn        DMA1_Channel4_5_6_7_IRQn          
-#define ADC1_IRQn                         ADC1_COMP_IRQn
-#define USART3_8_IRQn                     USART3_4_IRQn
-#define CEC_IRQn                          CEC_CAN_IRQn
+// #define PVD_IRQn                          PVD_VDDIO2_IRQn
+// #define RCC_IRQn                          RCC_CRS_IRQn
+// #define TS_IRQn                           TSC_IRQn
+// #define DMA1_Ch1_IRQn                     DMA1_Channel1_IRQn
+// #define DMA1_Ch2_3_DMA2_Ch1_2_IRQn        DMA1_Channel2_3_IRQn           
+// #define DMA1_Channel4_5_IRQn              DMA1_Channel4_5_6_7_IRQn
+// #define DMA1_Ch4_7_DMA2_Ch3_5_IRQn        DMA1_Channel4_5_6_7_IRQn          
+// #define ADC1_IRQn                         ADC1_COMP_IRQn
+// #define USART3_8_IRQn                     USART3_4_IRQn
+// #define CEC_IRQn                          CEC_CAN_IRQn
 
-/* Aliases for __IRQHandler */
-#define PVD_IRQHandler                    PVD_VDDIO2_IRQHandler
-#define RCC_IRQHandler                    RCC_CRS_IRQHandler
-#define TS_IRQHandler                     TSC_IRQHandler 
-#define DMA1_Ch1_IRQHandler               DMA1_Channel1_IRQHandler
-#define DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler  DMA1_Channel2_3_IRQHandler      
-#define DMA1_Channel4_5_IRQHandler        DMA1_Channel4_5_6_7_IRQHandler
-#define DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler  DMA1_Channel4_5_6_7_IRQHandler
-#define ADC1_IRQHandler                   ADC1_COMP_IRQHandler
-#define USART3_8_IRQHandler               USART3_4_IRQHandler
-#define CEC_IRQHandler                    CEC_CAN_IRQHandler 
+// /* Aliases for __IRQHandler */
+// #define PVD_IRQHandler                    PVD_VDDIO2_IRQHandler
+// #define RCC_IRQHandler                    RCC_CRS_IRQHandler
+// #define TS_IRQHandler                     TSC_IRQHandler 
+// #define DMA1_Ch1_IRQHandler               DMA1_Channel1_IRQHandler
+// #define DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler  DMA1_Channel2_3_IRQHandler      
+// #define DMA1_Channel4_5_IRQHandler        DMA1_Channel4_5_6_7_IRQHandler
+// #define DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler  DMA1_Channel4_5_6_7_IRQHandler
+// #define ADC1_IRQHandler                   ADC1_COMP_IRQHandler
+// #define USART3_8_IRQHandler               USART3_4_IRQHandler
+// #define CEC_IRQHandler                    CEC_CAN_IRQHandler 
 
 #elif defined (STM32F051)
 /* Aliases for __IRQn */

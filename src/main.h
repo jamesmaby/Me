@@ -6,6 +6,7 @@
 extern struct CONCTX_T conCtx;
 
 #define printf(...) meFd_Printf(conCtx.pme_sd, __VA_ARGS__)
+#define cprintf(...) meFd_Printf(pCtx->pme_sd, __VA_ARGS__)
 extern const char* promptName;
 
 #endif

@@ -35,5 +35,5 @@ int main(){
 }
 
 void HardFault_Handler(void){
-    __ASM("BKPT #0");
+     __ASM volatile("BKPT #0");
 }

@@ -70,14 +70,14 @@ void ADC1_Init(){
     ADC_StartOfConversion(ADC1);
 }
 
-cons_cmd_rc_t console_fn_Adc(conCtx_t *ctx);
+cons_cmd_rc_t console_fn_Adc(conCtx_t *pCtx);
 
 COMMANDE(adc, "adc", console_fn_Adc, "Donne la valeur des ADC",
                         "     adc : affiche toutes les valeurs\r\n"
                         "     adc cal : affiche vcal\r\n" );
 
 
-cons_cmd_rc_t console_fn_Adc(conCtx_t *ctx){
+cons_cmd_rc_t console_fn_Adc(conCtx_t *pCtx){
     int status = CON_RC_DONE;
 
     if ( ARGNB(0) )
@@ -97,17 +97,11 @@ cons_cmd_rc_t console_fn_Adc(conCtx_t *ctx){
         if ( ARGEQ(1, "cal") ) {
             printf("VCAL: %d\r\n", (uint16_t)*((uint16_t*)VREF_INT_CAL));
 
-        } else {
-            printf("argument inconnu\r\n");
+        } else
             status = CON_RC_BAD_ARG;
-        }
     } else 
-    {
-        printf("bad usage : \r\n%s\r\n", ctx->com_cmd_desc->usage);
         status = CON_RC_BAD_ARG;
-    }
 
-    console_Prompt(ctx);
     return status;
 }
 

@@ -1,14 +1,13 @@
-cmake_minimum_required(VERSION 3.10)
-project(projstm32)
+cmake_minimum_required(VERSION 3.2)
 
-ENABLE_LANGUAGE(ASM)
+project(projstm32 C ASM)
 
 set( CMAKE_SYSTEM_NAME linux )
 set( TOOLCHAIN_PREFIX arm-none-eabi- )
 set( CMAKE_C_COMPILER   arm-none-eabi-gcc )
 set( CMAKE_OBJCOPY   arm-none-eabi-objcopy )
 set( CMAKE_ASM_COMPILER arm-none-eabi-gcc )
-set( _CMAKE_TOOLCHAIN_PREFIX arm-none-eabi- )
+# set( _CMAKE_TOOLCHAIN_PREFIX arm-none-eabi- )
 
 SET(CMAKE_C_FLAGS "-mthumb -Os -fno-builtin -mcpu=cortex-m0 -Wall -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-unroll-loops -ffast-math -ftree-vectorize" CACHE INTERNAL "c compiler flags")
 
@@ -17,6 +16,7 @@ SET(CMAKE_ASM_FLAGS "-mthumb -mcpu=cortex-m0 -x assembler-with-cpp" CACHE INTERN
 SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -g -mthumb -mcpu=cortex-m0 -mabi=aapcs -nostartfiles -T../arm-gcc-link.ld" CACHE INTERNAL "executable linker flags")
 
 add_compile_options(-D__FILENAME__=\"__FILE__\")
+
 
 add_definitions(-ggdb -gdwarf-2)
 set(CMAKE_BUILD_TYPE Debug)

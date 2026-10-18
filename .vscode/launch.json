@@ -30,9 +30,7 @@
             "servertype": "stutil",
             "device": "STM32F072RB",
             "interface": "swd",
-            "runToEntryPoint": "main", // else it starts at reset handler - not interested
-            "preLaunchTask": "Build all", // configured in tasks.json
-            // "preLaunchCommands": ["Build all"], // you can execute command instead of task
+            "serialNumber": "066EFF515570514867203509",
             "svdFile": "", // Include svd to watch device peripherals
             "swoConfig": {} // currently (v1.7.0) not supported
         },

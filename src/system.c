@@ -1,13 +1,8 @@
-#include <stm32f0xx.h>
-#include <stm32f0xx_rcc.h>
-#include <stm32f0xx_gpio.h>
 #include "stm32f0xx.h"
-#include "stm32f0xx_flash.h"
-#include "stm32f0xx_tim.h"
-#include "stm32f0xx_misc.h"
-#include "system_stm32f0xx.h"
-#include "stm32f0xx_iwdg.h"
+#include "stm32f0xx_rcc.h"
 
+
+#include "meMalloc.h"
 #include "system.h"
 #include "io.h"
 #include "GenLS.h"
@@ -38,6 +33,8 @@ void System_Init(void) {
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
+
+	meHeapInit();
 		
 	Timer_Init();
 	ADC1_Init();

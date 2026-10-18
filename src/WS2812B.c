@@ -121,8 +121,8 @@ void WS2812B_Init() {
 
     SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Tx, ENABLE);
     
-    NVIC_SetPriority(DMA1_Channel4_5_IRQn, 0);
-    NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
+    NVIC_SetPriority(DMA1_Channel4_5_6_7_IRQn, 0);
+    NVIC_EnableIRQ(DMA1_Channel4_5_6_7_IRQn);
 
     DMA_ITConfig(WS2818B_DMA, DMA_IT_TC, ENABLE);
 }
